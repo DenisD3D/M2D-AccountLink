@@ -1,33 +1,15 @@
 package ml.denisd3d.m2daccountlink;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.MapMaker;
-import com.mojang.authlib.GameProfile;
-import it.unimi.dsi.fastutil.Hash;
-import ml.denisd3d.minecraft2discord.Minecraft2Discord;
 import ml.denisd3d.minecraft2discord.api.M2DExtension;
 import ml.denisd3d.repack.net.dv8tion.jda.api.entities.ChannelType;
 import ml.denisd3d.repack.net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import ml.denisd3d.repack.org.apache.commons.collections4.map.PassiveExpiringMap;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.login.ServerLoginNetHandler;
-import net.minecraft.network.play.server.SPlayerListItemPacket;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.PlayerInteractionManager;
-import net.minecraft.stats.Stats;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 
-import java.util.HashMap;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class AccountLinkExtension extends M2DExtension {
     @Override
@@ -46,5 +28,29 @@ public class AccountLinkExtension extends M2DExtension {
         }
 
         return true;
+    }
+
+    @Override
+    public Boolean onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
+        AtomicInteger return_value = new AtomicInteger(0);
+        event.getPlayer().getCapability(CapabilityDiscordData.CAPABILITY_DISCORD_DATA).ifPresent(discordData -> {
+            if (discordData.getDiscordId() != 0)
+            {
+                return_value.set(1);
+            }
+            else if (M2DAccountLink.discord_ids.containsKey(event.getPlayer().getUniqueID()))
+            {
+                discordData.setDiscordId(M2DAccountLink.discord_ids.get(event.getPlayer().getUniqueID()));
+                return_value.set(1);
+            }
+            else
+            {
+                String code = String.format("%04d", M2DAccountLink.random.nextInt(10000));
+                M2DAccountLink.codes.put(code, event.getPlayer().getUniqueID());
+                ((ServerPlayerEntity)event.getPlayer()).connection.disconnect(new StringTextComponent("Send to <the bot> a message with : !code " + code));
+                return_value.set(0);
+            }
+        });
+        return return_value.get() == 1 ? true : null;
     }
 }

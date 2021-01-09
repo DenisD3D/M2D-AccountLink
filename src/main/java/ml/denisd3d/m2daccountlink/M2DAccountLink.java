@@ -46,33 +46,4 @@ public class M2DAccountLink {
         CapabilityDiscordData.register();
         M2DUtils.registerExtension(new AccountLinkExtension());
     }
-
-    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.DEDICATED_SERVER)
-    public static class Events
-    {
-        @SubscribeEvent
-        public static void playerLoggedIn(PlayerEvent.PlayerLoggedInEvent event)
-        {
-            event.getPlayer().getCapability(CapabilityDiscordData.CAPABILITY_DISCORD_DATA).ifPresent(discordData -> {
-                if (discordData.getDiscordId() != 0)
-                {
-                    return;
-                }
-                else if (discord_ids.containsKey(event.getPlayer().getUniqueID()))
-                {
-                    discordData.setDiscordId(discord_ids.get(event.getPlayer().getUniqueID()));
-                    return;
-                }
-                else
-                {
-                    String code = String.format("%04d", random.nextInt(10000));
-                    codes.put(code, event.getPlayer().getUniqueID());
-                    ((ServerPlayerEntity)event.getPlayer()).connection.disconnect(new StringTextComponent("Send to <the bot> a message with : !code " + code));
-                }
-            });
-
-        }
-    }
-
-
 }
