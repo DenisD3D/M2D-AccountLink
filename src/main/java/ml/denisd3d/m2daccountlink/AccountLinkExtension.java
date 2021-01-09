@@ -19,11 +19,12 @@ public class AccountLinkExtension extends M2DExtension {
             if (M2DAccountLink.codes.containsKey(event.getMessage().getContentRaw().split(" ")[1]))
             {
                 M2DAccountLink.discord_ids.put(M2DAccountLink.codes.get(event.getMessage().getContentRaw().split(" ")[1]), event.getAuthor().getIdLong());
-                // TODO : return confirm message
+                M2DAccountLink.codes.remove(event.getMessage().getContentRaw().split(" ")[1]);
+                event.getChannel().sendMessage("You now have access to the server").queue(); // TODO : Replace with config
             }
             else
             {
-                // TODO : return error message
+                event.getChannel().sendMessage("Your code is invalid. Please try again").queue(); // TODO : Replace with config
             }
         }
 
@@ -47,10 +48,22 @@ public class AccountLinkExtension extends M2DExtension {
             {
                 String code = String.format("%04d", M2DAccountLink.random.nextInt(10000));
                 M2DAccountLink.codes.put(code, event.getPlayer().getUniqueID());
-                ((ServerPlayerEntity)event.getPlayer()).connection.disconnect(new StringTextComponent("Send to <the bot> a message with : !code " + code));
+                ((ServerPlayerEntity)event.getPlayer()).connection.disconnect(new StringTextComponent("Send to <the bot> a message with : !code " + code)); // TODO : replace with config
                 return_value.set(0);
             }
         });
         return return_value.get() == 1 ? true : null;
+    }
+
+    @Override
+    public Boolean onPlayerLeft(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (M2DAccountLink.codes.containsValue(event.getPlayer().getUniqueID()))
+        {
+            return null;
+        }
+        else
+        {
+            return true;
+        }
     }
 }
