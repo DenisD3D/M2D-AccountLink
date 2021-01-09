@@ -17,9 +17,9 @@ import java.util.concurrent.atomic.AtomicReference;
 public class AccountLinkExtension extends M2DExtension {
     @Override
     public Boolean onDiscordMessage(MessageReceivedEvent event) {
-        if (event.isFromType(ChannelType.PRIVATE) && event.getMessage().getContentRaw().startsWith(AccountLinkConfig.SERVER.linkCommand.get()))
+        if (!event.getAuthor().isBot() && event.isFromType(ChannelType.PRIVATE) && event.getMessage().getContentRaw().startsWith(AccountLinkConfig.SERVER.linkCommand.get()))
         {
-            String code = (event.getMessage().getContentRaw() + " .").split(" ")[1]; // Add a space to the message so we can not be out of bound
+            String code = event.getMessage().getContentRaw().substring(AccountLinkConfig.SERVER.linkCommand.get().length());
             if (M2DAccountLink.codes.containsKey(code))
             {
                 if (AccountLinkConfig.SERVER.rolesCheckEnabled.get())

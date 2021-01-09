@@ -36,7 +36,7 @@ public class AccountLinkConfig {
                     "   - Discord : https://discord.gg/rzzd76c").push("M2DAccountLink");
 
 
-            linkCommand = builder.comment(" Set an empty string to just send the code").define("linkCommand", "!code");
+            linkCommand = builder.comment(" Set an empty string to just send the code. Don't forget the space at the end if you want the command and the code separated").define("linkCommand", "!code ");
 
             kickMessage = builder.define("kickMessage", "Send to <YOUR BOT> a message with : !code ");
             invalidLinkCode = builder.define("invalidLinkCode", "Your code is invalid. Please try again");
