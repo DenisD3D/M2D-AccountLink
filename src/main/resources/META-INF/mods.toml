@@ -56,3 +56,10 @@ mandatory = true
 versionRange = "[1.16.4,1.17)"
 ordering = "NONE"
 side = "BOTH"
+
+[[dependencies.m2d-account-link]]
+modId = "minecraft2discord"
+mandatory = true
+versionRange = ","
+ordering = "AFTER"
+side = "SERVER"

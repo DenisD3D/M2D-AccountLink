@@ -10,7 +10,9 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import org.apache.logging.log4j.LogManager;
@@ -39,6 +41,7 @@ public class M2DAccountLink {
     public M2DAccountLink() {
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(CapabilityAttachEventHandler.class);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, AccountLinkConfig.SERVER_SPECS, "m2d-account-link.toml");
     }
 
     @SubscribeEvent
