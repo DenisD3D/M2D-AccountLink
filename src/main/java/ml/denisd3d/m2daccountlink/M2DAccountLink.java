@@ -1,5 +1,8 @@
 package ml.denisd3d.m2daccountlink;
 
+import com.mojang.authlib.GameProfile;
+import ml.denisd3d.m2daccountlink.storage.DiscordStorageHolder;
+import ml.denisd3d.minecraft2discord.Minecraft2Discord;
 import ml.denisd3d.minecraft2discord.api.M2DUtils;
 import ml.denisd3d.repack.org.apache.commons.collections4.map.PassiveExpiringMap;
 import net.minecraft.block.Block;
@@ -13,11 +16,13 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
@@ -27,26 +32,28 @@ import java.util.concurrent.TimeUnit;
 @Mod("m2d-account-link")
 public class M2DAccountLink {
 
-    // Directly reference a log4j logger.
-    private static final Logger LOGGER = LogManager.getLogger();
+    public static final Logger LOGGER = LogManager.getLogger();
 
-    public static PassiveExpiringMap.ConstantTimeToLiveExpirationPolicy<String, UUID>
+    public static PassiveExpiringMap.ConstantTimeToLiveExpirationPolicy<String, GameProfile>
             expirationPolicy = new PassiveExpiringMap.ConstantTimeToLiveExpirationPolicy<>(
             10, TimeUnit.MINUTES);
-    public static PassiveExpiringMap<String, UUID> codes = new PassiveExpiringMap<>(expirationPolicy);
+    public static PassiveExpiringMap<String, GameProfile> codes = new PassiveExpiringMap<>(expirationPolicy);
 
-    public static HashMap<UUID, Long> discord_ids = new HashMap<>();
     public static Random random = new Random();
 
     public M2DAccountLink() {
         MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(CapabilityAttachEventHandler.class);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, AccountLinkConfig.SERVER_SPECS, "m2d-account-link.toml");
     }
 
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
-        CapabilityDiscordData.register();
         M2DUtils.registerExtension(new AccountLinkExtension());
+    }
+
+    @SubscribeEvent
+    public void onServerAboutToStart(FMLServerAboutToStartEvent event) {
+        DiscordStorageHolder.loadDiscordIdsList();
+        DiscordStorageHolder.saveDiscordIdsList();
     }
 }
